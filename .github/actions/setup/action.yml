@@ -1,0 +1,37 @@
+# this is composite workflow that gets the repo ready for actions
+# for docs how composite workflows work see https://wallis.dev/blog/composite-github-actions
+
+name: Setup repository
+description: Setups this repository to allow efficient run of various github actions
+
+runs:
+    using: composite
+    steps:
+        - name: Install package manager via corepack
+          run: |
+              npm install -g corepack@v0.31.0
+              corepack enable
+          shell: bash
+
+        - uses: actions/setup-node@v4
+          with:
+              node-version-file: .nvmrc
+              registry-url: https://npm.pkg.github.com
+
+        # pnpm install with use of cache
+        # this is bit duplicate to cache: "pnpm" above, but from testing, the best performance is when both are used.
+        - name: Cache node modules
+          id: cache-node-modules
+          uses: actions/cache@v4
+          env:
+              cache-name: cache-node-modules
+          with:
+              path: ./node_modules
+              key: ${{ env.cache-name }}-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+              restore-keys: |
+                  ${{ env.cache-name }}-${{ runner.os }}
+
+        - name: npm install
+          shell: bash
+          run: |
+              npm install --frozen-lockfile
