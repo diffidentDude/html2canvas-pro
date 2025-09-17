@@ -40,4 +40,4 @@ jobs:
                   git config user.email github-actions@github.com
                   echo "${{ secrets.GH_TOKEN }}"
             - run: npm run build
-            - run: export GITHUB_TOKEN="${{ secrets.GH_TOKEN }}" && pnpm semantic-release
+            - run: export GITHUB_TOKEN="${{ secrets.GH_TOKEN }}" && export NPM_TOKEN="${{ secrets.NPM_TOKEN }}" && npx semantic-release
