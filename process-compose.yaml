@@ -1,0 +1,12 @@
+processes:
+  README:
+    command: "./bin/readme.sh; tail -f /dev/null"
+
+  setup:
+    command: devbox run setup
+
+  survey-reporting-ui:
+    command: pnpm dev --filter=survey-reporting-ui
+    depends_on:
+      setup:
+        condition: process_completed_successfully
