@@ -1,36 +1,44 @@
-name: Create Release
+# This workflow will do a clean installation of node dependencies, cache/restore them, build the source code and run tests across different versions of node
+# For more information see: https://help.github.com/actions/language-and-framework-guides/using-nodejs-with-github-actions
+
+name: Release
 
 on:
-  workflow_dispatch:
-    inputs:
-      version:
-        description: 'Semantic version (major | minor | patch | premajor | preminor | prepatch | prerelease)'
-        default: 'patch'
-        required: true
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+
+concurrency:
+    group: 'release'
+    cancel-in-progress: false
 
 jobs:
-  version:
-    name: Create version
-    runs-on: ubuntu-latest
-    permissions:
-        contents: write
-    steps:
-    - uses: actions/checkout@v3
-    - uses: actions/setup-node@v3
-      with:
-        node-version: 16
-    - name: Npm install
-      run: npm ci
-    - name: Configure git
-      run: |
-        git config user.name "CI"
-        git config user.email "yorickshan@gmail.com"
-    - name: Create release
-      run: npm run release -- --preset eslint --release-as ${{ github.event.inputs.version }}
-    - name: Print details
-      run: |
-        cat package.json
-        cat CHANGELOG.md
-        git tag
-    - name: Push git version
-      run: git push --follow-tags origin master
+    release:
+        name: Release
+        runs-on: ubuntu-latest
+        env:
+            NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+        permissions:
+            contents: write
+            packages: write
+
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  persist-credentials: false
+            - uses: ./.github/actions/setup
+            - name: Release
+              env:
+                  GH_TOKEN: ${{ secrets.GH_TOKEN }}
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+              run: |
+                  npm config set "//npm.pkg.github.com/:_authToken" "${{ secrets.NPM_TOKEN }}"
+                  git config user.name github-actions
+                  git config user.email github-actions@github.com
+                  echo "${{ secrets.GH_TOKEN }}"
+            - run: npm whoami --registry=https://npm.pkg.github.com
+            - run: pnpm run build
+            - run: export GITHUB_TOKEN="${{ secrets.GH_TOKEN }}" && pnpm semantic-release

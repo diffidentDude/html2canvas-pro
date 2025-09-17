@@ -1,0 +1,38 @@
+{
+    "plugins": [
+        "@semantic-release/commit-analyzer",
+        "@semantic-release/release-notes-generator",
+        [
+            "@semantic-release/npm",
+            {
+                "npmPublish": true,
+                "tarballDir": "."
+            }
+        ],
+        ["@semantic-release/github"]
+    ],
+    "branches": [
+        "master",
+        "main",
+        {
+            "name": "**",
+            "channel": "development",
+            "prerelease": "${name.replace(/[\\/\\_]/g, '--')}"
+        },
+        {
+            "name": "**/**",
+            "channel": "development",
+            "prerelease": "${name.replace(/[\\/\\_]/g, '--')}"
+        },
+        {
+            "name": "**/**/**",
+            "channel": "development",
+            "prerelease": "${name.replace(/[\\/\\_]/g, '--')}"
+        },
+        {
+            "name": "**/**/**/**",
+            "channel": "development",
+            "prerelease": "${name.replace(/[\\/\\_]/g, '--')}"
+        }
+    ]
+}
