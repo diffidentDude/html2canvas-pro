@@ -39,6 +39,5 @@ jobs:
                   git config user.name github-actions
                   git config user.email github-actions@github.com
                   echo "${{ secrets.GH_TOKEN }}"
-            - run: npm whoami --registry=https://npm.pkg.github.com
-            - run: pnpm run build
+            - run: npm run build
             - run: export GITHUB_TOKEN="${{ secrets.GH_TOKEN }}" && pnpm semantic-release
